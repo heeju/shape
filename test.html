@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <title></title>
+  <style>
+    body {background-color: #777;}
+    canvas {background-color: white;}
+    div{margin-bottom:10px;}
+    input {width: 50px;}
+    button {width: 100px;}
+    #fps {position:absolute; top: 7px; left: 1187px;}
+  </style>
+  <body>
+    <canvas width="1200" height="800" id="canvas"></canvas>
+    <div>
+      <button id="animate">animate</button>
+    </div>
+    <span id="fps"></span>
+    <script src="./index.js"></script>
+    <script>
+      var canvas = document.getElementById('canvas')
+        , context = canvas.getContext('2d')
+        , style = {
+            fillStyle: '#337'
+          };
+
+
+      var shape = new Shape('rect', {
+        x1: 100,
+        y1: 100,
+        x2: 400,
+        y2: 600,
+        scale: 1,
+        rotate: 0
+      });
+
+
+      shape.set(style);
+
+      setTimeout(function() {
+        shape.set({
+          scale: .1,
+          rotate: 360,
+          opacity: .6,
+        }, 1000);
+      }, 500);
+
+      setTimeout(function() {
+        shape.set({
+          scale: 1,
+          opacity: 1
+        },100);
+      }, 1000);
+
+
+      var fps = 60;
+
+      function loop() {
+        context.clearRect(0,0,1200,800);
+        shape.update();
+        shape.draw(context, true);
+        fps++;
+        requestAnimationFrame(loop);
+      }
+
+      var $fps = document.getElementById('fps')
+
+      function updateFps() {
+        $fps.textContent = fps;
+        fps = 0;
+        setTimeout(updateFps, 1000);
+      }
+
+      requestAnimationFrame(loop);
+      updateFps();
+
+    </script>
+  </body>
+</html>
