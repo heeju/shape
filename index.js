@@ -4,11 +4,34 @@ Shape.getBoundingFunc = {
   'circle': getCircleBound
 };
 
+Shape.containsFunc = {
+  // 'line': drawLine,
+  'rect': containsRect,
+  'circle': containsCircle
+};
+
 Shape.drawFunc = {
   // 'line': drawLine,
   'rect': drawRect,
   'circle': drawCircle
 };
+
+Shape.vars = [
+  'x1', 'y1', 'x2', 'y2', 'centerX', 'centerY',
+  'scaleX', 'scaleY', 'rotate',
+  'fillStyle', 'lineWidth', 'strokeStyle', 'img', 'opacity',
+  'pointerX', 'pointerY'
+];
+
+Shape.changeableVars = [
+  'x1', 'y1', 'x2', 'y2', 'scaleX', 'scaleY', 'rotate'
+];
+
+Shape.transitionVars = [
+  'x1', 'y1', 'x2', 'y2', 'scaleX', 'scaleY', 'rotate', 'opacity'
+];
+
+Shape.time = window.performance || Date;
 
 function Shape(type, values) {
   var enableTypes = ['line', 'rect', 'circle'];
@@ -25,26 +48,28 @@ function Shape(type, values) {
     return;
   }
 
-
   this.boundingStyle = {
-    fillStyle: '#bbb'
+    fillStyle: '#aaa',
+    opacity: .6
   };
 
-  var variables = {}
-    , changeable = ['x1', 'y1', 'x2', 'y2', 'scaleX', 'scaleY', 'rotate']
-    , styles = ['fillStyle', 'lineWidth', 'strokeStyle', 'img', 'opacity'];
+  var self = this
+    , variables = {};
 
   variables.type = type;
 
-  // inputed coordinate
+  // coordinates
   variables.x1 = 0;
   variables.y1 = 0;
   variables.x2 = 0;
   variables.y2 = 0;
 
+  //transform
   variables.scaleX = 1;
   variables.scaleY = 1;
   variables.rotate = 0;
+
+  //style
   variables.opacity = 1;
 
   //setter vars
@@ -60,30 +85,33 @@ function Shape(type, values) {
       }
 
       if (changed === true) {
-        variables = applyChange(variables, this);
+        variables = applyChange(variables, true);
       }
       return;
     }
 
-    //set coordinate
-    if (changeable.indexOf(name) > -1 && variables[name] !== value) {
+    //set values
+    if (Shape.vars.indexOf(name) > -1 && variables[name] !== value) {
       variables[name] = value;
-      changed = true;
+      if (Shape.changeableVars.indexOf(name) > -1) {
+        changed = true;
+      }
     }
 
+    //setScale
     if (name === 'scale') {
       variables.scaleX = value;
       variables.scaleY = value;
       changed = true;
     }
 
-    //set styles
-    if (styles.indexOf(name) > -1 && variables[name] !== value) {
-      variables[name] = value;
-    }
 
     if (changed === true && doApply !== false) {
-      variables = applyChange(variables, this);
+      variables = applyChange(variables, true);
+    }
+
+    if (variables.bounding) {
+      self.bounding = variables.bounding;
     }
 
     return changed;
@@ -112,39 +140,94 @@ function Shape(type, values) {
 }
 
 
-function applyChange(vars, self) {
-  vars.center = {
+function applyChange(vars, getBounding) {
+  vars.shapeCenter = {
     x: (vars.x1 + vars.x2) / 2,
     y: (vars.y1 + vars.y2) / 2
-  };
+  }
+
+  if (vars.centerX === null || vars.centerX === undefined) {
+    vars.centerX = vars.shapeCenter.x;
+  }
+
+  if (vars.centerX === null || vars.centerY === undefined) {
+    vars.centerY = vars.shapeCenter.y;
+  }
 
   vars.width = Math.abs(vars.x2 - vars.x1);
   vars.height = Math.abs(vars.y2 - vars.y1);
   vars.radian = vars.rotate * Math.PI / 180;
 
+  vars.coordinates = {
+    x1: vars.x1,
+    y1: vars.y1,
+    x2: vars.x2,
+    y2: vars.y2,
+    centerX: vars.shapeCenter.x,
+    centerY: vars.shapeCenter.y
+  }
+
+  if (vars.centerX !== vars.shapeCenter.x || vars.centerY !== vars.shapeCenter.y) {
+
+    if (vars.scaleX !== 1) {
+      vars.coordinates.centerX = vars.centerX - (vars.centerX - vars.coordinates.centerX) * vars.scaleX;
+    }
+
+    if (vars.scaleY !== 1) {
+      vars.coordinates.centerY = vars.centerY - (vars.centerY - vars.coordinates.centerY) * vars.scaleY;
+    }
+
+    if (vars.rotate % 360 !== 0) {
+      var rotated = getRotateCoordinate(
+        vars.coordinates.centerX, vars.coordinates.centerY,
+        vars.rotate,
+        vars.centerX, vars.centerY
+      );
+      vars.coordinates.centerX = rotated.x;
+      vars.coordinates.centerY = rotated.y;
+    }
+
+    vars.coordinates.x1 = vars.x1 - vars.shapeCenter.x + vars.coordinates.centerX;
+    vars.coordinates.y1 = vars.y1 - vars.shapeCenter.y + vars.coordinates.centerY;
+    vars.coordinates.x2 = vars.x2 - vars.shapeCenter.x + vars.coordinates.centerX;
+    vars.coordinates.y2 = vars.y2 - vars.shapeCenter.y + vars.coordinates.centerY;
+  }
+
+
   // bounding area
-  self.bounding = Shape.getBoundingFunc[vars.type](
-    vars.x1, vars.y1, vars.x2, vars.y2, vars.scaleX, vars.scaleY, vars.rotate
-  );
+  if (getBounding === true) {
+    vars.bounding = Shape.getBoundingFunc[vars.type](
+      vars.coordinates.x1, vars.coordinates.y1, vars.coordinates.x2, vars.coordinates.y2,
+      vars.coordinates.centerX, vars.coordinates.centerY,
+      vars.scaleX, vars.scaleY, vars.rotate
+    );
+  }
 
   return vars;
 }
 
 
-Shape.prototype.update = function(dt, dx) {
-  var now = (window.performance || Date).now();
+Shape.prototype.update = function(values) {
+  if (values !== undefined) {
+    this.set(values, false);
+  }
 
   if (this.transition !== undefined) {
-    var transitionResult = transitionLoop(this.transition, now, dt, dx);
+    var now = Shape.time.now()
+      , transitionResult = transitionLoop(this.transition, now);
+
     if (transitionResult === false) {
-      // console.log(this.transition.toVars);
       this.setValue(this.transition.toVars);
+      // console.log(this.transition.toVars);
       delete this.transition;
     } else {
-      // console.log(transitionResult);
       this.setValue(transitionResult);
+      // console.log(transitionResult);
     }
   }
+
+
+  //mouse pointer
 }
 
 Shape.prototype.set = function(toVars, duration) {
@@ -152,7 +235,10 @@ Shape.prototype.set = function(toVars, duration) {
     return;
   }
 
-  if (this.transition === undefined && duration === undefined || duration <= 0) {
+
+  if (duration === false ||
+      this.transition === undefined && (duration === undefined || duration <= 0)
+  ) {
     return this.setValue(toVars);
   }
 
@@ -161,12 +247,21 @@ Shape.prototype.set = function(toVars, duration) {
     delete toVars.scale;
   }
 
-  var now = (window.performance || Date).now();
+  var now = Shape.time.now();
   duration = duration || 0;
 
+  var keys = Object.keys(toVars)
+    , i = keys.length;
+
+  while (i--) {
+    if (Shape.transitionVars.indexOf(keys[i]) === -1) {
+      delete toVars[keys[i]];
+    }
+  }
+
   if (this.transition !== undefined) {
-    var keys = Object.keys(this.transition.toVars)
-      , i = keys.length;
+    keys = Object.keys(this.transition.toVars);
+    i = keys.length;
 
     while (i--) {
       if (toVars[keys[i]] === undefined) {
@@ -182,7 +277,6 @@ Shape.prototype.set = function(toVars, duration) {
     duration: duration,
     startTime: now
   };
-
 }
 
 // Shape.prototype.move = function(vx, vy) {
@@ -199,67 +293,89 @@ Shape.prototype.set = function(toVars, duration) {
 
 
 Shape.prototype.contains = function(x, y) {
-
+  var vals = this.getValue([
+    'type', 'coordinates',
+    'scaleX', 'scaleY', 'rotate'
+  ]);
+  return Shape.containsFunc[vals.type](x, y, vals);
 }
 
 
-Shape.prototype.draw = function(context, drawBounding) {
+function contains(type, vals) {
+
+}
+
+/* ************************
+ * draws
+ ************************** */
+Shape.prototype.draw = function(context, img, drawBounding) {
   if (context === undefined || context.drawImage === undefined) {
     return;
   }
 
-  if (drawBounding === true) {
-    drawToCanvas(context, 'rect', this.bounding, this.boundingStyle);
+  if (img === true && drawBounding === undefined) {
+    drawBounding = true;
+    img = undefined;
   }
 
-  else if (drawBounding.constructor === Image) {
-    this.setValue('img', drawBounding);
+  //draw bounding for debug
+
+  if (drawBounding === true && this.bounding !== undefined) {
+    drawToCanvas(context, 'rect', {coordinates: this.bounding}, this.boundingStyle);
   }
 
-  var type = this.getValue('type')
-    , shape = this.getValue(['x1', 'y1', 'x2', 'y2', 'width', 'height', 'scaleX', 'scaleY', 'rotate'])
-    , style = this.getValue(['fillStyle', 'lineWidth', 'strokeStyle', 'img', 'opacity']);
+  // if (img.constructor !== Image) {
+  //   // this.setValue('img', drawBounding);
+  //   img = undefined;
+  // }
 
-  drawToCanvas(context, type, shape, style);
+  drawToCanvas(context,
+    this.getValue('type'),
+    this.getValue(['coordinates', 'width', 'height', 'scaleX', 'scaleY', 'radian']),
+    this.getValue(['fillStyle', 'lineWidth', 'strokeStyle', 'opacity']),
+    img
+  );
 }
 
 
-function drawToCanvas(context, type, shape, style) {
-  var x = Math.min(shape.x1, shape.x2)
-    , y = Math.min(shape.y1, shape.y2)
-    , width = shape.width || Math.abs(shape.x2 - shape.x1)
-    , height = shape.height || Math.abs(shape.y2 - shape.y1)
+function drawToCanvas(context, type, shape, style, img) {
+  var x = Math.min(shape.coordinates.x1, shape.coordinates.x2)
+    , y = Math.min(shape.coordinates.y1, shape.coordinates.y2)
+    , width = shape.width || Math.abs(shape.coordinates.x2 - shape.coordinates.x1)
+    , height = shape.height || Math.abs(shape.coordinates.y2 - shape.coordinates.y1)
     , scaleX = shape.scaleX || 1
     , scaleY = shape.scaleY || 1
-    , rotate = shape.rotate || 0;
+    , radian = shape.radian || 0;
 
+  // 2d context
   context.save();
-
-  context.beginPath();
-  context.translate(width / 2 + x, height / 2 + y);
-  context.rotate(rotate * Math.PI / 180);
-  context.scale(scaleX, scaleY);
-  Shape.drawFunc[type](context, width, height);
-  context.closePath();
 
   if (style.opacity < 1) {
     context.globalAlpha = style.opacity;
   }
+  context.translate(width / 2 + x, height / 2 + y);
+  context.rotate(radian);
+  context.scale(scaleX, scaleY);
 
-  if (style.strokeStyle && style.lineWidth > 0) {
-    context.lineWidth = style.lineWidth;
-    context.strokeStyle = style.strokeStyle;
-    context.stroke();
+  context.beginPath();
+  Shape.drawFunc[type](context, width, height);
+  context.closePath();
+
+  if (img !== undefined) {
+    context.clip();
+    context.drawImage(img, -width/2, -height/2, width, height)
   }
 
-  if (style.fillStyle) {
+  else if (style.fillStyle !== undefined) {
     context.fillStyle = style.fillStyle;
     context.fill();
   }
 
-  // if (style.img !== undefined) {
-
-  // }
+  if (style.strokeStyle !== undefined && style.lineWidth > 0) {
+    context.lineWidth = style.lineWidth;
+    context.strokeStyle = style.strokeStyle;
+    context.stroke();
+  }
 
   context.restore();
 }
@@ -280,9 +396,9 @@ function getRotateCoordinate(x, y, degs, cx, cy) {
 
 
 
-/**
+/**********************************
  * line
- */
+ **********************************/
 function containsLine(x, y, get) {
 
 }
@@ -296,22 +412,19 @@ function drawLine(context, get) {
 /**********************************
  * rectangle
  ********************************* */
-function containsRect(x, y, get) {
-  var x1
-    , y1
-    , x2
-    , y2
-    , scaleX
-    , scaleY
-    , degs;
+function containsRect(x, y, vals) {
 
-  var cx = (x1 + x2) / 2
-    , cy = (y1 + y2) / 2;
+  var x1 = vals.coordinates.x1
+    , y1 = vals.coordinates.y1
+    , x2 = vals.coordinates.x2
+    , y2 = vals.coordinates.y2
+    , cx = vals.coordinates.centerX
+    , cy = vals.coordinates.centerY;
 
-  x1 = cx - (cx - x1) * scaleX;
-  y1 = cy - (cy - y1) * scaleY;
-  x2 = cx - (cx - x2) * scaleX;
-  y2 = cy - (cy - y2) * scaleY;
+  x1 = cx - (cx - x1) * vals.scaleX;
+  y1 = cy - (cy - y1) * vals.scaleY;
+  x2 = cx - (cx - x2) * vals.scaleX;
+  y2 = cy - (cy - y2) * vals.scaleY;
 
   var minX = Math.min(x1, x2)
     , maxX = Math.max(x1, x2)
@@ -319,26 +432,27 @@ function containsRect(x, y, get) {
     , maxY = Math.max(y1, y2)
     , point = {x: x, y: y};
 
-  if (degs % 360 !== 0) {
-    point = getRotateCoordinate(x, y, -degs, cx, cy);
+
+  if (vals.rotate % 360 !== 0) {
+    point = getRotateCoordinate(x, y, -vals.rotate, cx, cy);
   }
 
   if (point.x < minX || point.x > maxX || point.y < minY || point.y > maxY) {
     return false;
   }
 
-  return point;
+  return {
+    x: Math.round((point.x - minX) / vals.scaleX),
+    y: Math.round((point.y - minY) / vals.scaleY)
+  };
 }
 
 
-function getRectBound(x1, y1, x2, y2, scaleX, scaleY, degs) {
+function getRectBound(x1, y1, x2, y2, cx, cy, scaleX, scaleY, degs) {
 
-  var cx = (x1 + x2) / 2
-    , cy = (y1 + y2) / 2
-    , w = Math.abs(x2 - x1) * scaleX
+  var w = Math.abs(x2 - x1) * scaleX
     , h = Math.abs(y2 - y1) * scaleY
     , degs = Math.abs(degs % 360)
-
 
   if ((degs > 90 && degs < 180) || (degs > 270 && degs < 360)) {
     degs = 180 - degs;
@@ -351,15 +465,15 @@ function getRectBound(x1, y1, x2, y2, scaleX, scaleY, degs) {
     , dy = sin * w + cos * h;
 
   if (degs >= 0 && degs <= 90) {
-    x1 = cx - dx/2;
-    y1 = cy - dy/2;
-    x2 = cx + dx/2;
-    y2 = cy + dy/2;
+    x1 = cx - dx / 2;
+    y1 = cy - dy / 2;
+    x2 = cx + dx / 2;
+    y2 = cy + dy / 2;
   } else {
-    x1 = cx + dx/2;
-    y1 = cy + dy/2;
-    x2 = cx - dx/2;
-    y2 = cy - dy/2;
+    x1 = cx + dx / 2;
+    y1 = cy + dy / 2;
+    x2 = cx - dx / 2;
+    y2 = cy - dy / 2;
   }
 
   return {
@@ -370,55 +484,53 @@ function getRectBound(x1, y1, x2, y2, scaleX, scaleY, degs) {
   };
 }
 
-
 function drawRect(context, width, height) {
   context.rect(-width/2, -height/2, width, height);
 }
 
-
 /**********************************
  * circle
  ********************************* */
-function containsCircle(x, y, get) {
-  var x1
-    , y1
-    , x2
-    , y2
-    , scaleX
-    , scaleY
-    , degs;
-
-  var cx = (x1 + x2) / 2
-    , cy = (y1 + y2) / 2;
-
-  var rx = (x2 - x1) / 2
+function containsCircle(x, y, vals) {
+  var x1 = vals.coordinates.x1
+    , y1 = vals.coordinates.y1
+    , x2 = vals.coordinates.x2
+    , y2 = vals.coordinates.y2
+    , cx = vals.coordinates.centerX
+    , cy = vals.coordinates.centerY
+    , rx = (x2 - x1) / 2
     , ry = (y2 - y1) / 2
     , dim = {x: x - rx - x1, y: y - ry - y1};
 
-  if (degs % 360 !== 0) {
-    dim = getRotateCoordinate(dim.x, dim.y, degs);
+  if (vals.rotate % 360 !== 0) {
+    dim = getRotateCoordinate(dim.x, dim.y, -vals.rotate);
   }
 
-  var dx = (dim.x / scaleX)
-    , dy = (dim.y / scaleY);
+  var dx = (dim.x / vals.scaleX)
+    , dy = (dim.y / vals.scaleY);
 
   if ((dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) > 1) {
     return false;
   }
 
-  if (deg % 360 !== 0) {
-    return getRotateCoordinate(x, y, -deg, cx, cy);
-  } else {
-    return {x:x, y: y};
+  var point = {x: x, y: y}
+    , minX = Math.min(cx - (cx - x1) * vals.scaleX, cx - (cx - x2) * vals.scaleX)
+    , minY = Math.min(cy - (cy - y1) * vals.scaleY, cy - (cy - y2) * vals.scaleY);
+
+  if (vals.rotate % 360 !== 0) {
+    point = getRotateCoordinate(x, y, -vals.rotate, cx, cy);
   }
+
+  return {
+    x: Math.round((point.x - minX) / vals.scaleX),
+    y: Math.round((point.y - minY) / vals.scaleY)
+  };
 }
 
 //get bound
-function getCircleBound(x1, y1, x2, y2, scaleX, scaleY, degs) {
+function getCircleBound(x1, y1, x2, y2, cx, cy, scaleX, scaleY, degs) {
   var rx = (x2 - x1) / 2 * scaleX
-    , ry = (y2 - y1) / 2 * scaleY
-    , cx = (x1 + x2) / 2
-    , cy = (y1 + y2) / 2;
+    , ry = (y2 - y1) / 2 * scaleY;
 
   var radian = Math.PI / 180 * degs
     , sin = Math.sin(radian)
@@ -437,35 +549,35 @@ function getCircleBound(x1, y1, x2, y2, scaleX, scaleY, degs) {
 //draw circle
 function drawCircle(context, width, height) {
   var kappa = .5522848
-    , rx      = width / 2
-    , ry      = height / 2
-    , rt    = -ry * kappa
-    , rr  = rx * kappa
+    , rx = width / 2
+    , ry = height / 2
+    , rt = -ry * kappa
+    , rr = rx * kappa
     , rb = ry * kappa
-    , rl   = -rx * kappa;
+    , rl = -rx * kappa;
 
   context.moveTo(0, -ry);
-  context.bezierCurveTo(rr,  -ry, rx,  rt,  rx,  0);
-  context.bezierCurveTo(rx,  rb,  rr,  ry,  0,   ry);
-  context.bezierCurveTo(rl,  ry,  -rx, rb,  -rx, 0);
-  context.bezierCurveTo(-rx, rt,  rl,  -ry, 0,   -ry);
+  context.bezierCurveTo(rr, -ry, rx, rt, rx, 0);
+  context.bezierCurveTo(rx, rb, rr, ry, 0, ry);
+  context.bezierCurveTo(rl, ry, -rx, rb, -rx, 0);
+  context.bezierCurveTo(-rx, rt, rl, -ry, 0, -ry);
 }
 
 
 /* *********************************************
  * transition
  ********************************************* */
-function transitionLoop(transition, now, dt, dx) {
+function transitionLoop(transition, now) {
   var pass = now - transition.startTime;
 
   if (pass > transition.duration) {
     return false;
   }
 
-  var currentVars = {}
+  var keys = Object.keys(transition.fromVars)
+    , i = keys.length
     , dist
-    , keys = Object.keys(transition.fromVars)
-    , i = keys.length;
+    , currentVars = {};
 
   while (i--) {
     dist = transition.toVars[keys[i]] - transition.fromVars[keys[i]];
