@@ -13,10 +13,10 @@ browserify ./src/index.js -s Shape | derequire > ./dist/shape.js
 
 ```javascript
 var rect = new Shape.Shape('rect', {
-  x1: 0,
-  y1: 0,
-  x2: 100,
-  y2: 100,
+  x1: 100,
+  y1: 100,
+  x2: 400,
+  y2: 300,
   fillStyle: "#448",
   strokeStyle: "#333"
 });
@@ -26,9 +26,9 @@ var rect = new Shape.Shape('rect', {
 
 ```javascript
 rect.set({
-  rotate: 450,
+  rotate: 360,
   scale: .5
-}, duration, reset);
+}, 400);
 ```
 
 #### Shape batch (now can rect only)
@@ -42,11 +42,11 @@ var draw = new Shape.Draw(canvas, {
 var shapes = {
   rects: [
     {
-      x1: 0, y1: 0, x2: 95, y2: 95,
+      x1: 0, y1: 0, x2: 100, y2: 100,
       texture: 0
     },
     {
-      x1: 94, y1: 0, x2: 506, y2: 95,
+      x1: 100, y1: 0, x2: 400, y2: 100,
       texture: 1
     }
   ],
@@ -64,6 +64,7 @@ var shapes = {
 
 var batch = new Shape.Batch(shapes, draw);
 ```
+#### Shape Batch Animation
 
 ```javascript
 batch.set({
