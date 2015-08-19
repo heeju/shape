@@ -2,4 +2,4 @@ shape.js
 batch.js
 draw.js
 
-browserify ./src/index.js -o ./dist/shape.js -s Shape
+browserify ./src/index.js -s Shape | derequire > ./dist/shape.js

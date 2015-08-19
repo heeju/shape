@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Shape = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Shape = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -90,11 +90,11 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],2:[function(require,module,exports){
-var Shape = require('./shape.js');
+},{}],2:[function(_dereq_,module,exports){
+var Shape = _dereq_('./shape.js');
 
-require("setimmediate");
-require('emitter')(Batch.prototype);
+_dereq_("setimmediate");
+_dereq_('emitter')(Batch.prototype);
 
 module.exports = Batch;
 
@@ -218,8 +218,8 @@ function setValue(self, vals) {
   }
 }
 
-},{"./shape.js":8,"emitter":5,"setimmediate":7}],3:[function(require,module,exports){
-var extend = require('extend');
+},{"./shape.js":8,"emitter":5,"setimmediate":7}],3:[function(_dereq_,module,exports){
+var extend = _dereq_('extend');
 var vertexShaderSrc = [
   "attribute vec2 a_position;",
   "attribute vec2 a_texCoord;",
@@ -749,18 +749,18 @@ function draw2dRects(self, rects) {
  */
 module.exports = Draw;
 
-},{"extend":6}],4:[function(require,module,exports){
+},{"extend":6}],4:[function(_dereq_,module,exports){
 /**
  * shape utility exports
  * @type {Object}
  */
 module.exports = {
-  Shape: require('./shape'),
-  Batch: require('./batch'),
-  Draw: require('./draw')
+  Shape: _dereq_('./shape'),
+  Batch: _dereq_('./batch'),
+  Draw: _dereq_('./draw')
 }
 
-},{"./batch":2,"./draw":3,"./shape":8}],5:[function(require,module,exports){
+},{"./batch":2,"./draw":3,"./shape":8}],5:[function(_dereq_,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -923,7 +923,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],6:[function(require,module,exports){
+},{}],6:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = extend;
@@ -948,37 +948,7 @@ function extend(origin, add, deep) {
   return origin;
 }
 
-//   convertColorCode: convertColorCode
-// function convertColorCode(code, outputType) {
-//   //output:
-//   // hex: #808080
-//   // rgba: rgba(128,128,128,1)
-//   // matrix: [0.5, 0.5, 0.5, 1.0]
-//   var codeArray = [];
-
-//   if (typeof code === 'string') {
-//     // hex
-//     if (code.match(/^#((?:[\da-f]{3}){1,2})$/i) !== null) {
-//       // parseInt('', 16);
-//     }
-
-//     //rgb
-//     else if (code.match(/rgb\(([\d]{1,3}){3,4}\)/) === 0) {
-
-//     }
-
-//     //rgba
-//     // else if () {
-
-//     // }
-//   }
-
-//   var outputCode;
-
-//   return outputCode;
-// }
-
-},{}],7:[function(require,module,exports){
+},{}],7:[function(_dereq_,module,exports){
 (function (process){
 (function (global, undefined) {
   "use strict";
@@ -1162,8 +1132,8 @@ function extend(origin, add, deep) {
   attachTo.clearImmediate = clearImmediate;
 }(new Function("return this")()));
 
-}).call(this,require('_process'))
-},{"_process":1}],8:[function(require,module,exports){
+}).call(this,_dereq_('_process'))
+},{"_process":1}],8:[function(_dereq_,module,exports){
 
 'use strict';
 /**
