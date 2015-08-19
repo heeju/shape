@@ -33,7 +33,6 @@ Batch.prototype.update = function(values) {
 }
 
 Batch.prototype.draw = function() {
-  // var transformValues = this.integratedRect.getValue(['scaleX', 'rotate', 'drawGapX', 'drawGapY']);
   this.drawObj.drawRects(
     this.rects,
     this.integratedRect.getValue(['scaleX', 'rotate', 'drawGapX', 'drawGapY'])
@@ -56,13 +55,11 @@ Batch.prototype.updateTexture = function(index) {
 
 function init(self, datas) {
   self.rects = [];
-  // self.screenRect = [];
 
   var rects = datas.rects
     , values = {}
     , x = []
-    , y = []
-    , textureIndex;
+    , y = [];
 
   for (var i = 0; i < rects.length; i++) {
     self.rects[i] = new Shape('rect', {
@@ -75,19 +72,9 @@ function init(self, datas) {
     self.rects[i].index = i;
     self.rects[i].data = rects[i];
 
-    // datas.textures[rects[i].texture].type = rects[i].type;
-    // console.log(datas.textures[rects[i].texture].index)
-    textureIndex = datas.textures[rects[i].texture].index;
-
-    // if (rects[i].type === 'screen') {
-    //   // self.screenRect[index] = self.rects[i];
-    //   self.screenRect = self.rects[i];
-    // }
-
     x.push(rects[i].x1, rects[i].x2);
     y.push(rects[i].y1, rects[i].y2);
   }
-
 
   values.x1 = Math.min.apply(null, x);
   values.y1 = Math.min.apply(null, y);

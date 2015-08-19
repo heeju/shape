@@ -1,11 +1,13 @@
-## file list
+## File list
 * shape.js - shape module include 2d draw and animation
 * batch.js - generate shapes
 * draw.js - draw shape batch in 2d/webgl
 
-## How to bulid to UMD Module
-browserify ./src/index.js -s Shape | derequire > ./dist/shape.js
+## How to bulid
 
+```
+browserify ./src/index.js -s Shape | derequire > ./dist/shape.js
+```
 
 ## How to use
 
@@ -34,7 +36,7 @@ rect.set({
 #### Shape batch (now can rect only)
 
 ```javascript
-var canvas = document.getElementById('canvas')
+var canvas = document.getElementById('canvas');
 var draw = new Shape.Draw(canvas, {
   context: 'webgl' // webgl or 2d
 });
@@ -60,7 +62,7 @@ var shapes = {
       img: '2.png',
     }
   ]
-}
+};
 
 var batch = new Shape.Batch(shapes, draw);
 ```
@@ -68,9 +70,49 @@ var batch = new Shape.Batch(shapes, draw);
 
 ```javascript
 batch.set({
-  'rotate': 180,
-  'scale': 2,
+  rotate: 180,
+  scale: 2,
 }, 400, function() {
   alert('complete!!');
 });
 ```
+
+more use guide see example.
+
+## Method
+
+#### Shape.Shape
+
+##### set
+
+##### getValue
+
+##### contains
+
+##### update
+
+##### draw
+
+
+#### Shape.Batch
+
+##### getValue
+
+##### set
+
+##### update
+
+##### draw
+
+##### contains
+
+##### changeRects
+
+##### updateTexture
+
+
+## event
+
+#### Shape.Batch
+
+##### textureLoadEnd
