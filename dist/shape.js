@@ -168,14 +168,14 @@ function init(self, datas) {
     self.rects[i].index = i;
     self.rects[i].data = rects[i];
 
-    datas.textures[rects[i].texture].type = rects[i].type;
+    // datas.textures[rects[i].texture].type = rects[i].type;
     // console.log(datas.textures[rects[i].texture].index)
     textureIndex = datas.textures[rects[i].texture].index;
 
-    if (rects[i].type === 'screen') {
-      // self.screenRect[index] = self.rects[i];
-      self.screenRect = self.rects[i];
-    }
+    // if (rects[i].type === 'screen') {
+    //   // self.screenRect[index] = self.rects[i];
+    //   self.screenRect = self.rects[i];
+    // }
 
     x.push(rects[i].x1, rects[i].x2);
     y.push(rects[i].y1, rects[i].y2);
