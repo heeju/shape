@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>skin test</title>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      background-color: #bbb;
+    }
+    canvas {
+      background-color: #fff;
+      border: 3px solid #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Image Demo</h1>
+  <canvas id="demo-canvas" width="1000" height="440"></canvas>
+  <script src="../dist/shape.js"></script>
+  <script>
+  var canvas = document.getElementById('demo-canvas')
+    , context = canvas.getContext('2d');
+
+  var img1 = new Image();
+  img1.src = './img/1024x640.jpg';
+  img1.onload = function() {
+    var rect = new Shape.Shape('rect', {
+      x1: 10,
+      y1: 60,
+      x2: 10 + img1.width/2,
+      y2: 60 + img1.height/2
+    });
+    rect.draw(context, img1);
+  }
+
+  var img2 = new Image();
+  img2.src = './img/1280x1024.jpg';
+  img2.onload = function() {
+    var circle = new Shape.Shape('circle', {
+      x1: 540,
+      y1: 40,
+      x2: 540 + img2.width/3,
+      y2: 40 + img2.height/3
+    });
+
+    circle.set({
+      strokeStyle: "#000",
+      lineWidth: 10
+    });
+
+    circle.draw(context, img2);
+  }
+
+
+  </script>
+</body>
+</html>

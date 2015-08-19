@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>skin test</title>
+  <meta charset="UTF-8">
+  <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" /> -->
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #808080;
+    }
+    header {
+      display: block;
+      background-color: #333;
+      color :#f1f1f1;
+      padding: 10px;
+      height: 50px;
+    }
+    h1 {
+      margin: 0;
+      font-family: sans-serif;
+    }
+    main {
+      position: absolute;
+      background-color: #808080;
+      top: 70px;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      display: block;
+      overflow: hidden;
+    }
+    canvas {
+      position: absolute;
+    }
+    div.info {
+      position:absolute;
+      z-index: 2;
+      top: 7px; left: 5px;
+    }
+    div.info span {
+      padding: 2px 4px; background-color: rgba(255,255,255,.4);
+    }
+    #mouse-coordi {
+      opacity: 0;
+    }
+    #mouse-coordi.active {
+      opacity: 1;
+    }
+
+    canvas {
+      background-color: rgba(128,255,255,.2);
+    }
+    div.buttons {
+      position:absolute;
+      z-index: 2;
+      top: 7px; right: 5px;
+      background-color: rgba(0,0,0,.2);
+      padding: 10px;
+    }
+    button {min-width: 120px; min-height: 24px;}
+  </style>
+</head>
+<body>
+  <header class="viewer-toolbar">
+    <h1>Batch &amp; webgl</h1>
+  </header>
+
+  <main class="viewer-wrap" id="viewer-wrap">
+    <div class="info">
+      <span id="context"></span>
+      <span id="fps">60</span>
+      <span id="mouse-coordi"></span>
+    </div>
+    <canvas width="1200" height="700" id="canvas"></canvas>
+
+    <div class="buttons">
+      <button id="rotate-90">rotate +90</button>
+      <button id="rotate-minus-90">rotate -90</button>
+      <br>
+      <button id="zoom-plus">zoom +</button>
+      <button id="zoom-minus">zoom -</button>
+      <br>
+      <button id="zoom-5">zoom 50%</button>
+      <button id="zoom-10">zoom 100%</button>
+      <br>
+      <button id="zoom-15">zoom 150%</button>
+      <button id="zoom-20">zoom 200%</button>
+      <br>
+
+      <button id="skin-on">skin on</button>
+      <button id="skin-off">skin off</button>
+      <br>
+
+      <button id="realsize-on">realsize mode on</button>
+      <button id="realsize-off">realsize mode off</button>
+      <!-- <img src="./test.jpg"> -->
+    </div>
+  </main>
+
+  <script src="../dist/shape.js"></script>
+  <script>
+    var canvas = document.getElementById('canvas')
+      , deviceScreen = new Image();
+
+    var texturePath = './img/skin/';
+    var skinDatas = {
+      textures: [
+        { //0
+          index: 0,
+          img: 'top-left.png'
+        },
+        { //1
+          index: 1,
+          img: 'top-center.png',
+        },
+        { //2
+          index: 2,
+          img: 'top-right.png'
+        },
+        { //3
+          index: 3,
+          img: 'center-left.png',
+        },
+        { //4
+          index: 4,
+          img: 'center-right.png',
+        },
+        { //5
+          index: 5,
+          img: 'bottom-left.png'
+        },
+        { //6
+          index: 6,
+          img: 'bottom-center.png',
+        },
+        { //7
+          index: 7,
+          img: 'bottom-right.png'
+        },
+        { //8
+          index: 8,
+          img: 'top-speaker.png'
+        },
+        { //9
+          index: 9,
+          img: deviceScreen
+        },
+        { //10
+          index: 10,
+          img: 'logo.png'
+        },
+        { //11
+          index: 11,
+          img: 'button-back.png'
+        },
+        { //12
+          index: 12,
+          img: 'button-home.png'
+        },
+        { //13
+          index: 13,
+          img: 'button-task.png'
+        },
+        // { //14
+        //   img: 'button.svg'
+        // },
+      ],
+
+      rects: [
+        //top
+        {
+          type: 'skin',
+          x1: 0, y1: 0, x2: 95, y2: 95,
+          texture: 0
+        },
+        {
+          type: 'skin',
+          x1: 94, y1: 0, x2: 506, y2: 95,
+          texture: 1
+        },
+        {
+          type: 'skin',
+          x1: 505, y1: 0, x2: 600, y2: 95,
+          texture: 2
+        },
+
+        //center
+        {
+          type: 'skin',
+          x1: 0, y1: 94, x2: 31, y2: 1054,
+          texture: 3
+        },
+        {
+          type: 'skin',
+          x1: 569, y1: 94, x2: 600, y2: 1054,
+          texture: 4
+        },
+
+        //bottom
+        {
+          type: 'skin',
+          x1: 0, y1: 1053, x2: 95, y2: 1148,
+          texture: 5
+        },
+        {
+          type: 'skin',
+          x1: 94, y1: 1053, x2: 506, y2: 1148,
+          texture: 6
+        },
+        {
+          type: 'skin',
+          x1: 505, y1: 1053, x2: 600, y2: 1148,
+          texture: 7
+        },
+
+        //speaker
+        {
+          type: 'skin',
+          x1: 240, y1: 46, x2: 400, y2: 76,
+          texture: 8
+        },
+
+
+        //screen
+        {
+          type: 'screen',
+          x1: 30, y1: 94, x2: 570, y2: 1054,
+          texture: 9
+        },
+
+
+        //back button
+        {
+          type: 'button',
+          x1: 146, y1: 1076, x2: 174, y2: 1104,
+          texture: 11
+        },
+
+        //back button
+        {
+          type: 'button',
+          x1: 286, y1: 1076, x2: 314, y2: 1104,
+          texture: 12
+        },
+
+        //back button
+        {
+          type: 'button',
+          x1: 426, y1: 1076, x2: 454, y2: 1104,
+          texture: 13
+        },
+
+        // //svg button
+        // {
+        //   type: 'button',
+        //   x1: 0, y1: 1000, x2: 792, y2: 1106,
+        //   texture: 14
+        // },
+      ]
+    }
+
+    for (var i =0 ; i < skinDatas.textures.length; i++) {
+      if (typeof skinDatas.textures[i].img === 'string') {
+        skinDatas.textures[i].img = texturePath + skinDatas.textures[i].img;
+      }
+    }
+
+    var noneSkinDatas = {
+      textures: [
+        { //0
+          index: 0,
+          img: deviceScreen
+        }
+      ],
+
+      rects: [
+        //screen
+        {
+          type: 'screen',
+          x1: 0, y1: 0, x2: 540, y2: 960,
+          texture: 0
+        }
+      ]
+    }
+
+
+    var fps = 60
+      , fpsId;
+
+    var $fps = document.getElementById('fps');
+
+    var drawObj = new Shape.Draw(canvas, {
+      context: '2d'
+    });
+
+    var deviceObj = null;
+
+
+    var
+      // UI
+        viewWidth = 1200
+      , viewHeight = 700
+
+
+      , margin = 20
+      , rafID
+
+      //constants
+      , centerX
+      , centerY
+      , deviceWidth
+      , deviceHeight
+
+
+      //transform values
+      , scale
+      , degrees = 0
+      , tx = 0
+      , ty = 0
+
+      , bounding
+      , realSize = false;
+
+
+    //set device
+    deviceScreen.onload = function() {
+      // startDevice(noneSkinDatas);
+      startDevice(skinDatas);
+    }
+    deviceScreen.src = './img/mobile.png';
+
+
+    function startDevice(deviceRectData) {
+
+      deviceObj = null;
+
+      deviceObj = new Shape.Batch(deviceRectData, drawObj);
+      canvas.addEventListener('mousemove', getMouseCoordi);
+
+      document.getElementById('context').textContent = deviceObj.contextType;
+
+      updateFps();
+
+      deviceObj.on('textureLoadEnd', function() {
+        centerX = deviceObj.getValue('centerX');
+        centerY = deviceObj.getValue('centerY');
+
+        deviceWidth = deviceObj.getValue('width');
+        deviceHeight = deviceObj.getValue('height');
+
+        scale = scale || (viewHeight - margin*2) / deviceHeight;
+        deviceObj.set({
+          translateX: viewWidth / 2 - centerX,
+          translateY: viewHeight / 2 - centerY,
+          scale: scale,
+          rotate: degrees
+        });
+
+        bounding = deviceObj.integratedRect.bounding;
+
+        if (rafID) {
+          cancelAnimationFrame(rafID);
+        }
+
+        rafID = requestAnimationFrame(update);
+
+        // setTimeout(function() {
+        //   deviceObj.set({
+        //     rotate: -90,
+        //     scale: 1.25
+        //   }, 400);
+        // },500);
+
+      });
+    }
+
+
+    function getMouseCoordi(event) {
+      var $mouseCoordi = document.getElementById('mouse-coordi');
+
+      if (deviceObj === null) {
+        return false;
+      }
+
+      var screenPointerCoord = deviceObj.contains(deviceObj.screenRect.index, event.offsetX, event.offsetY);
+      if (screenPointerCoord !== false) {
+        $mouseCoordi.className = 'active info';
+        $mouseCoordi.textContent = screenPointerCoord.x + ', ' + screenPointerCoord.y;
+      } else {
+        $mouseCoordi.className = 'info';
+        $mouseCoordi.textContent = '';
+      }
+    }
+
+
+    document.getElementById('rotate-90').onclick = function() {
+      degrees += 90;
+      applySet();
+    }
+
+    document.getElementById('rotate-minus-90').onclick = function() {
+      degrees -= 90;
+      applySet();
+    }
+
+    document.getElementById('zoom-plus').onclick = function() {
+      scale += .1;
+      applySet();
+    }
+
+    document.getElementById('zoom-minus').onclick = function() {
+      if (scale <= .2) return;
+      scale -= .1;
+      applySet();
+    }
+
+    document.getElementById('zoom-5').onclick = function() {
+      scale = .5;
+      applySet();
+    }
+
+    document.getElementById('zoom-10').onclick = function() {
+      scale = 1;
+      applySet();
+    }
+
+    document.getElementById('zoom-15').onclick = function() {
+      scale = 1.5;
+      applySet();
+    }
+
+    document.getElementById('zoom-20').onclick = function() {
+      scale = 2;
+      applySet();
+    }
+
+    document.getElementById('skin-on').onclick = function() {
+      changeSkin(skinDatas);
+    }
+
+    document.getElementById('skin-off').onclick = function() {
+      changeSkin(noneSkinDatas);
+    }
+
+    document.getElementById('realsize-on').onclick = function() {
+      realSize = true;
+    }
+
+    document.getElementById('realsize-off').onclick = function() {
+      realSize = false;
+    }
+
+
+    function applySet() {
+      deviceObj.set({
+        'rotate': degrees,
+        'scale': scale
+      }, 400, function() {
+          degrees = degrees % 360;
+      });
+    }
+
+
+    function changeSkin(rectData) {
+      if (deviceObj === null) {
+        return false;
+      }
+      if (rafID) {
+        cancelAnimationFrame(rafID);
+      }
+      deviceObj.changeRects(rectData);
+    }
+
+    function update() {
+      var setValue = {
+        translateX: viewWidth / 2 - centerX,
+        translateY: viewHeight / 2 - centerY,
+      }
+
+      if (realSize === true) {
+        setValue.drawGapX = -bounding.x1 + margin;
+        setValue.drawGapY = -bounding.y1 + margin;
+      } else {
+        setValue.drawGapX = 0;
+        setValue.drawGapY = 0;
+      }
+
+      deviceObj.update(setValue);
+
+
+      //draw
+      if (realSize === true) {
+        canvas.width = bounding.x2 - bounding.x1 + margin * 2;
+        canvas.height = bounding.y2 - bounding.y1 + margin * 2;
+        canvas.style.top = bounding.y1 - margin + 'px';
+        canvas.style.left = bounding.x1 - margin + 'px';
+      } else {
+        canvas.width = viewWidth;
+        canvas.height = viewHeight;
+        canvas.style.top = 0;
+        canvas.style.left = 0;
+      }
+
+      bounding = deviceObj.integratedRect.bounding;
+
+      deviceObj.draw();
+      fps++;
+      rafID = requestAnimationFrame(update);
+    }
+
+    function updateFps() {
+      if (fpsId) {
+        clearTimeout(fpsId);
+      }
+      $fps.textContent = fps + 'fps';
+      fps = 0;
+      fpsId = setTimeout(updateFps, 1000);
+    }
+
+  </script>
+</body>
+</html>

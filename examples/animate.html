@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>skin test</title>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      background-color: #bbb;
+    }
+    canvas {
+      background-color: #fff;
+      border: 3px solid #333;
+    }
+    button {
+      font-size: 30px;
+      padding: 10px 30px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Animate Demo</h1>
+  <canvas id="demo-canvas" width="1000" height="440"></canvas>
+  <br>
+  <button id="start-animate">start</button>
+  <script src="../dist/shape.js"></script>
+  <script>
+  var canvas = document.getElementById('demo-canvas')
+    , context = canvas.getContext('2d')
+    , duration = 4000;
+
+
+  var rect = new Shape.Shape('rect', {
+    x1: 50,
+    y1: 60,
+    x2: 50 + 400,
+    y2: 60 + 300,
+    fillStyle: "#448"
+  });
+
+  var circle = new Shape.Shape('circle', {
+    x1: 540,
+    y1: 60,
+    x2: 540 + 400,
+    y2: 60 + 300
+  });
+
+  circle.set({
+    fillStyle: "#173",
+    strokeStyle: "#333",
+    lineWidth: 2
+  });
+
+  document.getElementById('start-animate').onclick = function() {
+    rect.set({
+      y2: 160,
+      scale: .5
+    }, duration, reset);
+
+    circle.set({
+      rotate: 450
+    }, duration, reset);
+  };
+
+  function reset() {
+    setTimeout(function() {
+      rect.set({
+        y2: 360,
+        scale: 1
+      });
+
+      circle.set({
+        rotate: 0
+      });
+    }, 500);
+  }
+
+
+  update();
+
+
+  function update() {
+    rect.update();
+    circle.update();
+    requestAnimationFrame(draw);
+  }
+
+  function draw() {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    rect.draw(context, true);
+    circle.draw(context, true);
+    setTimeout(update, 0);
+  }
+
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+  <title></title>
+  <style>
+    body {background-color: #777; margin:0; padding: 0;}
+    canvas {background-color: white;}
+    div{margin-bottom:10px; line-height: 1.6;}
+    input {width: 50px;}
+    button {min-width: 120px;}
+    #fps {position:absolute; top: 7px; left: 10px; padding: 0 3px; background-color: rgba(255,255,255,.25);}
+  </style>
+  <body>
+    <canvas width="1000" height="640" id="canvas"></canvas>
+    <div>
+      <button id="rotate-90">rotate +90</button>
+      <button id="rotate-minus-90">rotate -90</button>
+      <br>
+      <button id="zoom-plus">zoom +</button>
+      <button id="zoom-minus">zoom -</button>
+      <br>
+      <button id="move-x-plus">translate x+</button>
+      <button id="move-x-minus">translate x-</button>
+      <br>
+      <button id="move-y-plus">translate y+</button>
+      <button id="move-y-minus">translate y-</button>
+      <br>
+      <button id="zoom-5">zoom 50%</button>
+      <button id="zoom-10">zoom 100%</button>
+      <button id="zoom-15">zoom 150%</button>
+      <button id="zoom-20">zoom 200%</button>
+      <br>
+      <button id="move-0">translate 0,0</button>
+      <button id="move-center">translate center</button>
+      <button id="center-0">set center 0,0</button>
+      <button id="center-center">set center</button>
+      <!-- <img src="./test.jpg"> -->
+    </div>
+    <span id="fps"></span>
+    <script>
+      var module = {};
+    </script>
+    <script src="../dist/shape.js"></script>
+    <script>
+      var canvas = document.getElementById('canvas')
+        , context = canvas.getContext('2d')
+
+        , shapeStyle = {
+            fillStyle: '#337'
+          }
+        , img = new Image()
+
+        , width = 640
+        , height = 512
+        , canvaxCX = canvas.width / 2
+        , canvaxCY = canvas.height / 2
+
+        , scale = 1
+        , degree = 0
+        , centerX = 0
+        , centerY = 0
+        , translateX = 0
+        , translateY = 0;
+
+      img.src = "./img/1280x1024.jpg";
+
+      img.onload = function() {
+        update();
+        updateFps();
+      }
+
+      var shape1 = new Shape.Shape('rect', {
+        x1: 0,
+        y1: 0,
+        x2: width,
+        y2: height,
+        // centerX: 100,
+        // centerY: 100,
+      });
+
+      shape1.set(shapeStyle);
+
+      var pointX = 0
+        , pointY = 0;
+
+      canvas.addEventListener('mousemove', function(event){
+        var contains1 = shape1.contains(event.offsetX, event.offsetY);
+        console.log(contains1);
+      });
+
+      var duration = 400;
+
+      document.getElementById('rotate-90').onclick = function() {
+        degree += 90;
+        applySet();
+      }
+
+      document.getElementById('rotate-minus-90').onclick = function() {
+        degree -= 90;
+        applySet();
+      }
+
+      document.getElementById('zoom-plus').onclick = function() {
+        scale += .1;
+        applySet();
+      }
+
+      document.getElementById('zoom-minus').onclick = function() {
+        if (scale <= .2) return;
+        scale -= .1;
+        applySet();
+      }
+
+      document.getElementById('zoom-5').onclick = function() {
+        scale = .5;
+        applySet();
+      }
+
+      document.getElementById('zoom-10').onclick = function() {
+        scale = 1;
+        applySet();
+      }
+
+      document.getElementById('zoom-15').onclick = function() {
+        scale = 1.5;
+        applySet();
+      }
+
+      document.getElementById('zoom-20').onclick = function() {
+        scale = 2;
+        applySet();
+      }
+
+      document.getElementById('move-x-plus').onclick = function() {
+        translateX += 50;
+        applySet();
+      }
+
+      document.getElementById('move-x-minus').onclick = function() {
+        translateX -= 50;
+        applySet();
+      }
+
+      document.getElementById('move-y-plus').onclick = function() {
+        translateY += 50;
+        applySet();
+      }
+
+      document.getElementById('move-y-minus').onclick = function() {
+        translateY -= 50;
+        applySet();
+      }
+
+      document.getElementById('move-center').onclick = function() {
+        translateX = canvaxCX - shape1.getValue('centerX');
+        translateY = canvaxCY - shape1.getValue('centerY');
+        applySet();
+      }
+
+      document.getElementById('move-0').onclick = function() {
+        translateX = 0;
+        translateY = 0;
+        applySet();
+      }
+
+
+      document.getElementById('center-0').onclick = function() {
+        shape1.set({
+          centerX: 0,
+          centerY: 0
+        });
+      }
+
+      document.getElementById('center-center').onclick = function() {
+        shape1.set({
+          centerX: width/2,
+          centerY: height/2
+        });
+      }
+
+      function applySet() {
+        shape1.set({
+          'rotate': degree,
+          'scale': scale,
+          'translateX': translateX,
+          'translateY': translateY
+        }, duration, function() {
+            degree = degree % 360;
+        });
+      }
+
+
+      var fps = 60;
+      var $fps = document.getElementById('fps');
+
+      function updateFps() {
+        $fps.textContent = fps;
+        fps = 0;
+        setTimeout(updateFps, 1000);
+      }
+
+
+      var currentCY
+        , currentCX;
+
+      function update() {
+        shape1.update();
+        currentCX = shape1.getValue('centerX') + shape1.getValue('translateX');
+        currentCY = shape1.getValue('centerY') + shape1.getValue('translateY');
+        requestAnimationFrame(draw);
+      }
+
+      function draw() {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        shape1.draw(context, img, true);
+        drawCenter();
+        fps++;
+        setTimeout(update, 0);
+      }
+
+
+      function drawCenter() {
+        context.save();
+
+        context.strokeStyle = '#000';
+        context.lineWidth = 2;
+
+        context.beginPath();
+        context.moveTo(currentCX, 0);
+        context.lineTo(currentCX, canvas.height);
+        context.stroke();
+
+        context.beginPath();
+        context.moveTo(0, currentCY);
+        context.lineTo(canvas.width, currentCY);
+        context.stroke();
+
+        context.restore();
+      }
+
+
+    </script>
+  </body>
+</html>
