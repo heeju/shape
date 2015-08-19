@@ -11,18 +11,18 @@ browserify ./src/index.js -s Shape | derequire > ./dist/shape.js
 
 Single Shape
 
-``js
+```javascript
 var rect = new Shape.Shape('rect', {
   x1: 0,
   y1: 0,
   x2: 100,
   y2: 100
 });
-``
+```
 
 Shape batch
 
-``js
+```javascript
 var canvas = document.getElementById('canvas')
 var draw = new Shape.Draw(canvas, {
   context: 'webgl' // webgl or 2d
@@ -52,4 +52,4 @@ var shapes = {
 }
 
 var batch = new Shape.Batch(shapes, draw);
-``
+```
