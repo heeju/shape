@@ -147,117 +147,88 @@
           index: 9,
           img: deviceScreen
         },
-        { //10
-          index: 10,
-          img: 'logo.png'
-        },
         { //11
-          index: 11,
+          index: 10,
           img: 'button-back.png'
         },
         { //12
-          index: 12,
+          index: 11,
           img: 'button-home.png'
         },
         { //13
-          index: 13,
+          index: 12,
           img: 'button-task.png'
-        },
-        // { //14
-        //   img: 'button.svg'
-        // },
+        }
       ],
 
       rects: [
         //top
         {
-          type: 'skin',
           x1: 0, y1: 0, x2: 95, y2: 95,
           texture: 0
         },
         {
-          type: 'skin',
           x1: 94, y1: 0, x2: 506, y2: 95,
           texture: 1
         },
         {
-          type: 'skin',
           x1: 505, y1: 0, x2: 600, y2: 95,
           texture: 2
         },
 
         //center
         {
-          type: 'skin',
           x1: 0, y1: 94, x2: 31, y2: 1054,
           texture: 3
         },
         {
-          type: 'skin',
           x1: 569, y1: 94, x2: 600, y2: 1054,
           texture: 4
         },
 
         //bottom
         {
-          type: 'skin',
           x1: 0, y1: 1053, x2: 95, y2: 1148,
           texture: 5
         },
         {
-          type: 'skin',
           x1: 94, y1: 1053, x2: 506, y2: 1148,
           texture: 6
         },
         {
-          type: 'skin',
           x1: 505, y1: 1053, x2: 600, y2: 1148,
           texture: 7
         },
 
         //speaker
         {
-          type: 'skin',
           x1: 240, y1: 46, x2: 400, y2: 76,
           texture: 8
         },
 
-
         //screen
         {
-          type: 'screen',
           x1: 30, y1: 94, x2: 570, y2: 1054,
           texture: 9
         },
 
-
         //back button
         {
-          type: 'button',
           x1: 146, y1: 1076, x2: 174, y2: 1104,
+          texture: 10
+        },
+
+        //home button
+        {
+          x1: 286, y1: 1076, x2: 314, y2: 1104,
           texture: 11
         },
 
-        //back button
+        //task button
         {
-          type: 'button',
-          x1: 286, y1: 1076, x2: 314, y2: 1104,
-          texture: 12
-        },
-
-        //back button
-        {
-          type: 'button',
           x1: 426, y1: 1076, x2: 454, y2: 1104,
-          texture: 13
-        },
-
-        // //svg button
-        // {
-        //   type: 'button',
-        //   x1: 0, y1: 1000, x2: 792, y2: 1106,
-        //   texture: 14
-        // },
+          texture: 12
+        }
       ]
     }
 
@@ -384,7 +355,7 @@
         return false;
       }
 
-      var screenPointerCoord = deviceObj.contains(deviceObj.screenRect.index, event.offsetX, event.offsetY);
+      var screenPointerCoord = deviceObj.contains(9, event.offsetX, event.offsetY); //screen index: 9
       if (screenPointerCoord !== false) {
         $mouseCoordi.className = 'active info';
         $mouseCoordi.textContent = screenPointerCoord.x + ', ' + screenPointerCoord.y;

@@ -96,15 +96,15 @@ more use guide see example.
 
 #### Shape.Batch
 
+##### set
+
 ##### getValue
 
-##### set
+##### contains
 
 ##### update
 
 ##### draw
-
-##### contains
 
 ##### changeRects
 
